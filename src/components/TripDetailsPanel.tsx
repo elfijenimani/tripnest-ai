@@ -135,6 +135,33 @@ function TripDetailsPanel({
     };
   }, [trip.id]);
 
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    const previousOverscrollBehavior = document.body.style.overscrollBehavior;
+
+    document.body.style.overflow = "hidden";
+    document.body.style.overscrollBehavior = "none";
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        if (previewItem) {
+          setPreviewItem(null);
+          return;
+        }
+
+        onClose();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.body.style.overscrollBehavior = previousOverscrollBehavior;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose, previewItem]);
+
   const imageCount = mediaItems.filter((item) => item.type === "image").length;
   const videoCount = mediaItems.filter((item) => item.type === "video").length;
 
@@ -270,8 +297,8 @@ function TripDetailsPanel({
         className="absolute inset-0 bg-foreground/35 backdrop-blur-sm"
       />
 
-      <aside className="absolute right-0 top-0 flex h-full w-full max-w-[980px] flex-col overflow-hidden rounded-l-[2.5rem] bg-background text-foreground shadow-[0_35px_120px_-35px_rgba(0,0,0,0.55)]">
-        <div className="relative min-h-[280px] overflow-hidden bg-foreground text-background">
+      <aside className="absolute right-0 top-0 z-10 h-[100dvh] max-h-[100dvh] w-full max-w-[980px] overflow-y-auto overscroll-contain rounded-none bg-background pb-[calc(env(safe-area-inset-bottom)+130px)] text-foreground shadow-[0_35px_120px_-35px_rgba(0,0,0,0.55)] md:rounded-l-[2.5rem] md:pb-8">
+        <div className="relative min-h-[220px] overflow-hidden bg-foreground text-background sm:min-h-[280px]">
           <img
             src={trip.cover_image_url || heroMap}
             alt={trip.title}
@@ -280,44 +307,44 @@ function TripDetailsPanel({
 
           <div className="absolute inset-0 bg-gradient-to-br from-foreground/95 via-foreground/65 to-foreground/25" />
 
-          <div className="relative z-10 flex h-full min-h-[280px] flex-col justify-between p-6 md:p-8">
-            <div className="flex items-center justify-between gap-4">
-              <span className="rounded-full bg-white/12 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.25em] text-background/70 backdrop-blur">
+          <div className="relative z-10 flex min-h-[220px] flex-col justify-between p-5 sm:min-h-[280px] sm:p-6 md:p-8">
+            <div className="flex items-start justify-between gap-3">
+              <span className="rounded-full bg-white/12 px-4 py-2 font-mono text-[9px] uppercase tracking-[0.22em] text-background/70 backdrop-blur sm:text-[10px]">
                 Trip Folder
               </span>
 
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-full bg-white px-5 py-3 text-sm font-black text-foreground shadow-xl transition hover:-translate-y-0.5 hover:bg-sunset"
+                className="shrink-0 rounded-full bg-white px-5 py-3 text-sm font-black text-foreground shadow-xl transition hover:-translate-y-0.5 hover:bg-sunset"
               >
                 Close
               </button>
             </div>
 
             <div>
-              <span className="inline-flex rounded-full bg-white px-4 py-2 font-mono text-[10px] font-black uppercase tracking-widest text-sunset">
+              <span className="inline-flex rounded-full bg-white px-4 py-2 font-mono text-[9px] font-black uppercase tracking-widest text-sunset sm:text-[10px]">
                 {trip.mood || "Memory"}
               </span>
 
-              <h1 className="mt-5 max-w-3xl font-display text-5xl leading-none tracking-tight md:text-7xl">
+              <h1 className="mt-4 max-w-3xl font-display text-4xl leading-[0.95] tracking-tight sm:text-5xl md:text-7xl">
                 {trip.title}
               </h1>
 
-              <p className="mt-4 text-sm font-bold text-background/80">
+              <p className="mt-3 text-sm font-bold text-background/80">
                 {[trip.city, trip.country].filter(Boolean).join(", ")}
               </p>
 
-              <p className="mt-2 text-xs uppercase tracking-[0.2em] text-background/45">
+              <p className="mt-2 break-words text-[11px] uppercase tracking-[0.18em] text-background/45 sm:text-xs">
                 {formatDateRange(trip.start_date, trip.end_date)}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="border-b border-black/5 bg-white px-5 py-4 md:px-8">
+        <div className="border-b border-black/5 bg-white px-4 py-4 md:px-8">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
               <TabButton
                 active={activeTab === "overview"}
                 onClick={() => setActiveTab("overview")}
@@ -340,7 +367,7 @@ function TripDetailsPanel({
               </TabButton>
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -354,7 +381,7 @@ function TripDetailsPanel({
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadingMedia}
-                className="rounded-full bg-sunset px-5 py-3 text-xs font-black uppercase tracking-widest text-foreground shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
+                className="col-span-2 rounded-full bg-sunset px-4 py-3 text-[10px] font-black uppercase tracking-[0.16em] text-foreground shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 sm:col-span-1 sm:px-5 sm:text-xs sm:tracking-widest"
               >
                 {uploadingMedia ? "Uploading..." : "Add photo/video"}
               </button>
@@ -362,7 +389,7 @@ function TripDetailsPanel({
               <button
                 type="button"
                 onClick={onEdit}
-                className="rounded-full border border-black/10 bg-background px-5 py-3 text-xs font-black uppercase tracking-widest text-foreground transition hover:-translate-y-0.5 hover:bg-white"
+                className="rounded-full border border-black/10 bg-background px-4 py-3 text-[10px] font-black uppercase tracking-[0.16em] text-foreground transition hover:-translate-y-0.5 hover:bg-white sm:px-5 sm:text-xs sm:tracking-widest"
               >
                 Edit
               </button>
@@ -371,7 +398,7 @@ function TripDetailsPanel({
                 type="button"
                 onClick={onDelete}
                 disabled={deleting}
-                className="rounded-full border border-red-100 bg-red-50 px-5 py-3 text-xs font-black uppercase tracking-widest text-red-500 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-full border border-red-100 bg-red-50 px-4 py-3 text-[10px] font-black uppercase tracking-[0.16em] text-red-500 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 sm:px-5 sm:text-xs sm:tracking-widest"
               >
                 {deleting ? "Deleting..." : "Delete"}
               </button>
@@ -385,7 +412,7 @@ function TripDetailsPanel({
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto p-5 md:p-8">
+        <div className="p-4 pb-[calc(env(safe-area-inset-bottom)+150px)] sm:p-5 md:p-8 md:pb-8">
           {activeTab === "overview" && (
             <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
               <section className="rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5">
@@ -424,20 +451,20 @@ function TripDetailsPanel({
                   Photos and videos
                 </h2>
 
-                <div className="mt-6 grid grid-cols-3 gap-3">
-                  <div className="rounded-[1.5rem] bg-white/10 p-4">
-                    <p className="text-3xl font-black">{mediaItems.length}</p>
-                    <p className="mt-1 text-xs text-background/50">Total</p>
+                <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-3">
+                  <div className="rounded-[1.35rem] bg-white/10 p-3 sm:rounded-[1.5rem] sm:p-4">
+                    <p className="text-2xl font-black sm:text-3xl">{mediaItems.length}</p>
+                    <p className="mt-1 text-[10px] text-background/50 sm:text-xs">Total</p>
                   </div>
 
-                  <div className="rounded-[1.5rem] bg-white/10 p-4">
-                    <p className="text-3xl font-black">{imageCount}</p>
-                    <p className="mt-1 text-xs text-background/50">Photos</p>
+                  <div className="rounded-[1.35rem] bg-white/10 p-3 sm:rounded-[1.5rem] sm:p-4">
+                    <p className="text-2xl font-black sm:text-3xl">{imageCount}</p>
+                    <p className="mt-1 text-[10px] text-background/50 sm:text-xs">Photos</p>
                   </div>
 
-                  <div className="rounded-[1.5rem] bg-white/10 p-4">
-                    <p className="text-3xl font-black">{videoCount}</p>
-                    <p className="mt-1 text-xs text-background/50">Videos</p>
+                  <div className="rounded-[1.35rem] bg-white/10 p-3 sm:rounded-[1.5rem] sm:p-4">
+                    <p className="text-2xl font-black sm:text-3xl">{videoCount}</p>
+                    <p className="mt-1 text-[10px] text-background/50 sm:text-xs">Videos</p>
                   </div>
                 </div>
 
@@ -466,7 +493,7 @@ function TripDetailsPanel({
                     Folder Media
                   </p>
 
-                  <h2 className="mt-2 font-display text-5xl">
+                  <h2 className="mt-2 font-display text-4xl sm:text-5xl">
                     Photos & videos
                   </h2>
 
@@ -676,7 +703,7 @@ function TabButton({ active, children, onClick }: TabButtonProps) {
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full px-5 py-3 text-xs font-black uppercase tracking-widest transition ${
+      className={`w-full rounded-full px-4 py-3 text-center text-[10px] font-black uppercase tracking-[0.16em] transition sm:w-auto sm:px-5 sm:text-xs sm:tracking-widest ${
         active
           ? "bg-foreground text-background shadow-lg"
           : "bg-background text-foreground/50 hover:bg-foreground hover:text-background"
@@ -835,15 +862,15 @@ function MediaPreviewModal({ item, onClose }: MediaPreviewModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 px-4 py-6 backdrop-blur-md">
+    <div className="fixed inset-0 z-[80] overflow-y-auto bg-black/80 px-3 py-4 pb-[calc(env(safe-area-inset-bottom)+120px)] backdrop-blur-md sm:px-4 sm:py-6">
       <button
         type="button"
         aria-label="Close media preview"
         onClick={onClose}
-        className="absolute inset-0"
+        className="fixed inset-0"
       />
 
-      <div className="relative z-10 flex max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-[2rem] bg-white shadow-[0_35px_120px_-35px_rgba(0,0,0,0.85)]">
+      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col overflow-hidden rounded-[2rem] bg-white shadow-[0_35px_120px_-35px_rgba(0,0,0,0.85)]">
         <div className="flex flex-col gap-3 border-b border-black/5 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <p className="font-mono text-[10px] uppercase tracking-widest text-foreground/40">
@@ -855,11 +882,11 @@ function MediaPreviewModal({ item, onClose }: MediaPreviewModalProps) {
             </h3>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
             <button
               type="button"
               onClick={() => void handleDownload()}
-              className="rounded-full bg-sunset px-5 py-3 text-xs font-black uppercase tracking-widest text-foreground shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
+              className="rounded-full bg-sunset px-4 py-3 text-[10px] font-black uppercase tracking-[0.16em] text-foreground shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl sm:px-5 sm:text-xs sm:tracking-widest"
             >
               Download
             </button>
@@ -867,26 +894,26 @@ function MediaPreviewModal({ item, onClose }: MediaPreviewModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full bg-foreground px-5 py-3 text-xs font-black uppercase tracking-widest text-background shadow-lg transition hover:-translate-y-0.5"
+              className="rounded-full bg-foreground px-4 py-3 text-[10px] font-black uppercase tracking-[0.16em] text-background shadow-lg transition hover:-translate-y-0.5 sm:px-5 sm:text-xs sm:tracking-widest"
             >
               Close
             </button>
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto bg-foreground p-4">
+        <div className="overflow-auto bg-foreground p-3 sm:p-4">
           {item.type === "image" ? (
             <img
               src={item.url}
               alt={item.name}
-              className="mx-auto max-h-[70vh] w-auto max-w-full rounded-[1.5rem] object-contain shadow-2xl"
+              className="mx-auto max-h-[62dvh] w-auto max-w-full rounded-[1.5rem] object-contain shadow-2xl sm:max-h-[70vh]"
             />
           ) : (
             <video
               src={item.url}
               controls
               autoPlay
-              className="mx-auto max-h-[70vh] w-auto max-w-full rounded-[1.5rem] shadow-2xl"
+              className="mx-auto max-h-[62dvh] w-auto max-w-full rounded-[1.5rem] shadow-2xl sm:max-h-[70vh]"
             />
           )}
         </div>
