@@ -126,7 +126,6 @@ function DashboardPage() {
 
   const [isTripModalOpen, setIsTripModalOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-
   const detailsScrollYRef = useRef(0);
 
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
@@ -153,46 +152,58 @@ function DashboardPage() {
   useEffect(() => {
     if (!isDetailsOpen) return;
 
-    const previousOverflow = document.body.style.overflow;
-    const previousPaddingRight = document.body.style.paddingRight;
-    const scrollbarWidth =
-      window.innerWidth - document.documentElement.clientWidth;
+    detailsScrollYRef.current = window.scrollY;
 
-    if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-    }
+    const previousOverflow = document.body.style.overflow;
+    const previousPosition = document.body.style.position;
+    const previousTop = document.body.style.top;
+    const previousWidth = document.body.style.width;
 
     document.body.style.overflow = "hidden";
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setIsDetailsOpen(false);
-        setSelectedTrip(null);
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${detailsScrollYRef.current}px`;
+    document.body.style.width = "100%";
 
     return () => {
       document.body.style.overflow = previousOverflow;
-      document.body.style.paddingRight = previousPaddingRight;
-      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.position = previousPosition;
+      document.body.style.top = previousTop;
+      document.body.style.width = previousWidth;
+
+      window.scrollTo(0, detailsScrollYRef.current);
     };
   }, [isDetailsOpen]);
 
   useEffect(() => {
-    if (!selectedTrip?.id) return;
+    if (!isDetailsOpen) return;
 
-    const freshTrip = trips.find((trip) => trip.id === selectedTrip.id);
+    function handleEscapeKey(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        closeTripDetails();
+      }
+    }
 
-    if (!freshTrip) {
-      setIsDetailsOpen(false);
-      setSelectedTrip(null);
+    window.addEventListener("keydown", handleEscapeKey);
+
+    return () => {
+      window.removeEventListener("keydown", handleEscapeKey);
+    };
+  }, [isDetailsOpen]);
+
+  useEffect(() => {
+    if (!selectedTrip) return;
+
+    const freshSelectedTrip = trips.find((trip) => trip.id === selectedTrip.id);
+
+    if (!freshSelectedTrip) {
+      closeTripDetails();
       return;
     }
 
-    setSelectedTrip(freshTrip);
-  }, [trips, selectedTrip?.id]);
+    if (freshSelectedTrip !== selectedTrip) {
+      setSelectedTrip(freshSelectedTrip);
+    }
+  }, [selectedTrip, trips]);
 
   const userName = getDisplayName({
     fullName:
@@ -311,22 +322,13 @@ function DashboardPage() {
   }
 
   function openTripDetails(trip: Trip) {
-    detailsScrollYRef.current = window.scrollY;
     setSelectedTrip(trip);
-    setGlobalError("");
     setIsDetailsOpen(true);
   }
 
   function closeTripDetails() {
-    setIsDetailsOpen(false);
     setSelectedTrip(null);
-
-    window.requestAnimationFrame(() => {
-      window.scrollTo({
-        top: detailsScrollYRef.current,
-        behavior: "auto",
-      });
-    });
+    setIsDetailsOpen(false);
   }
 
   async function handleSaveTrip(event: FormEvent<HTMLFormElement>) {
