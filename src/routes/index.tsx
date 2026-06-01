@@ -70,9 +70,9 @@ const workflow = [
 
 function LandingPage() {
   return (
-    <div className="min-h-screen overflow-x-hidden bg-background font-sans text-[#142033] selection:bg-[#e99b6d]/30">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-background font-sans text-[#142033] selection:bg-[#e99b6d]/30">
       <nav className="sticky top-0 z-50 border-b border-[#142033]/5 bg-background/80 px-4 py-3 backdrop-blur-2xl md:px-8 md:py-4">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 overflow-hidden">
           <Link to="/" className="group flex items-center gap-3">
             <span className="relative flex size-4 items-center justify-center rounded-full bg-[#e99b6d]">
               <span className="absolute size-4 rounded-full bg-[#e99b6d]/50 transition group-hover:scale-[1.8] group-hover:opacity-0" />
@@ -122,7 +122,7 @@ function LandingPage() {
                 event.currentTarget.style.backgroundColor = "#142033";
                 event.currentTarget.style.color = "#ffffff";
               }}
-              className="inline-flex items-center justify-center rounded-full px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.14em] shadow-xl transition hover:-translate-y-0.5 sm:px-6 sm:text-xs md:px-8"
+              className="inline-flex shrink-0 items-center justify-center rounded-full px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.12em] shadow-xl transition hover:-translate-y-0.5 sm:px-6 sm:text-xs md:px-8"
             >
               Get Started
             </Link>
@@ -130,34 +130,34 @@ function LandingPage() {
         </div>
       </nav>
 
-      <header className="relative overflow-hidden px-4 pb-16 pt-10 sm:px-5 sm:pb-20 md:px-8 md:pb-32 md:pt-20">
+      <header className="relative w-full max-w-full overflow-hidden px-4 pb-14 pt-8 sm:px-6 sm:pb-20 md:px-8 md:pb-32 md:pt-20">
         <div className="pointer-events-none absolute -left-40 top-28 size-96 rounded-full bg-[#e99b6d]/10 blur-3xl" />
         <div className="pointer-events-none absolute -right-40 top-10 size-96 rounded-full bg-[#b9d8df]/30 blur-3xl" />
         <div className="pointer-events-none absolute bottom-0 left-1/2 size-96 -translate-x-1/2 rounded-full bg-[#c8d8c0]/20 blur-3xl" />
 
-        <div className="mx-auto grid max-w-7xl grid-cols-12 items-center gap-10 lg:gap-14">
-          <div className="col-span-12 animate-reveal lg:col-span-6">
-            <div className="mb-6 inline-flex max-w-full items-center gap-3 rounded-full border border-[#142033]/5 bg-[#c8d8c0]/40 px-4 py-2 shadow-sm">
+        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-14">
+          <div className="min-w-0 animate-reveal lg:col-span-6">
+            <div className="mb-6 inline-flex max-w-full items-center gap-3 rounded-full border border-[#142033]/5 bg-[#c8d8c0]/40 px-3 py-2 shadow-sm sm:px-4">
               <span className="size-2 rounded-full bg-[#e99b6d]" />
 
-              <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#142033]/70 sm:text-[10px] sm:tracking-[0.25em]">
+              <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-[#142033]/70 sm:text-[10px] sm:tracking-[0.25em]">
                 Intelligence meets nostalgia
               </span>
             </div>
 
-            <h1 className="max-w-full text-balance font-display text-[clamp(3rem,14vw,4.8rem)] leading-[0.92] tracking-tight text-[#142033] sm:text-[4.8rem] md:text-7xl lg:text-8xl">
+            <h1 className="max-w-full text-balance font-display text-[clamp(2.6rem,11vw,4rem)] leading-[0.94] tracking-tight text-[#142033] sm:text-[4.8rem] md:text-7xl lg:text-8xl">
               Turn your trips into{" "}
               <span className="italic text-[#e99b6d]">intelligent</span>{" "}
               memories.
             </h1>
 
-            <p className="mt-8 max-w-[48ch] text-pretty text-base leading-8 text-[#142033]/65 md:text-lg">
+            <p className="mt-7 max-w-full text-pretty text-base leading-8 text-[#142033]/65 sm:max-w-[48ch] md:text-lg">
               Save your travel photos, write deep reflections, and let AI weave
               your journeys into a living digital atlas that feels personal,
               elegant and unforgettable.
             </p>
 
-            <div className="mt-10 flex w-full flex-col gap-4 sm:flex-row">
+            <div className="mt-8 flex w-full max-w-full flex-col gap-4 sm:mt-10 sm:flex-row sm:items-center">
               <Link
                 to="/register"
                 style={{
@@ -172,15 +172,17 @@ function LandingPage() {
                   event.currentTarget.style.backgroundColor = "#142033";
                   event.currentTarget.style.color = "#ffffff";
                 }}
-                className="group inline-flex w-full items-center justify-center gap-3 rounded-full px-5 py-4 text-center text-xs font-black uppercase tracking-[0.14em] shadow-2xl transition hover:-translate-y-1 sm:w-auto sm:px-8 sm:text-sm sm:tracking-[0.16em]"
+                className="group inline-flex min-h-[58px] w-full max-w-full items-center justify-center gap-3 rounded-full px-5 py-4 text-center text-[11px] font-black uppercase leading-tight tracking-[0.12em] shadow-2xl transition hover:-translate-y-1 sm:w-auto sm:px-8 sm:text-sm sm:tracking-[0.16em]"
               >
-                Create Your First Trip
+                <span className="block max-w-full truncate sm:whitespace-nowrap">
+                  Create Your First Trip
+                </span>
 
                 <span
                   style={{
                     color: "#ffffff",
                   }}
-                  className="flex size-7 items-center justify-center rounded-full bg-white/20 transition group-hover:translate-x-1 group-hover:bg-white/50"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/20 transition group-hover:translate-x-1 group-hover:bg-white/50"
                 >
                   →
                 </span>
@@ -188,23 +190,23 @@ function LandingPage() {
 
               <Link
                 to="/login"
-                className="inline-flex w-full items-center justify-center rounded-full border border-[#142033]/10 bg-white/80 px-5 py-4 text-center text-xs font-black text-[#142033] shadow-sm transition hover:-translate-y-1 hover:bg-white sm:w-auto sm:px-8 sm:text-sm"
+                className="inline-flex min-h-[58px] w-full max-w-full items-center justify-center rounded-full border border-[#142033]/10 bg-white/80 px-5 py-4 text-center text-sm font-black leading-tight text-[#142033] shadow-sm transition hover:-translate-y-1 hover:bg-white sm:w-auto sm:px-8"
               >
                 Login to Dashboard
               </Link>
             </div>
 
-            <div className="mt-10 grid w-full max-w-md grid-cols-3 gap-2 sm:mt-12 sm:max-w-xl sm:gap-3">
+            <div className="mt-8 grid w-full max-w-full grid-cols-1 gap-3 sm:mt-12 sm:max-w-xl sm:grid-cols-3">
               {stats.map((item) => (
                 <div
                   key={item.label}
-                  className="rounded-2xl border border-black/5 bg-white/70 p-3 shadow-sm backdrop-blur-xl sm:rounded-3xl sm:p-4"
+                  className="rounded-3xl border border-black/5 bg-white/70 p-5 shadow-sm backdrop-blur-xl sm:p-4"
                 >
-                  <p className="font-display text-2xl font-bold text-[#142033] sm:text-3xl">
+                  <p className="font-display text-3xl font-bold text-[#142033] sm:text-3xl">
                     {item.value}
                   </p>
 
-                  <p className="mt-1 text-[8px] font-semibold uppercase leading-4 tracking-[0.14em] text-[#142033]/45 sm:text-[10px] sm:tracking-widest">
+                  <p className="mt-1 text-[10px] font-semibold uppercase leading-4 tracking-[0.14em] text-[#142033]/45 sm:text-[10px] sm:tracking-widest">
                     {item.label}
                   </p>
                 </div>
@@ -212,7 +214,7 @@ function LandingPage() {
             </div>
           </div>
 
-          <div className="col-span-12 mt-4 flex justify-center lg:col-span-6 lg:mt-0 lg:justify-end">
+          <div className="mt-2 flex min-w-0 justify-center lg:col-span-6 lg:mt-0 lg:justify-end">
             <div className="relative w-full max-w-[520px] animate-reveal">
               <div className="absolute -left-8 -top-8 hidden rounded-full bg-white/70 px-5 py-3 shadow-xl backdrop-blur-xl md:block">
                 <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#142033]/45">
