@@ -70,15 +70,15 @@ const workflow = [
 
 function LandingPage() {
   return (
-    <div className="min-h-screen overflow-hidden bg-background font-sans text-[#142033] selection:bg-[#e99b6d]/30">
-      <nav className="sticky top-0 z-50 border-b border-[#142033]/5 bg-background/80 px-5 py-4 backdrop-blur-2xl md:px-8">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
+    <div className="min-h-screen overflow-x-hidden bg-background font-sans text-[#142033] selection:bg-[#e99b6d]/30">
+      <nav className="sticky top-0 z-50 border-b border-[#142033]/5 bg-background/80 px-4 py-3 backdrop-blur-2xl md:px-8 md:py-4">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
           <Link to="/" className="group flex items-center gap-3">
             <span className="relative flex size-4 items-center justify-center rounded-full bg-[#e99b6d]">
               <span className="absolute size-4 rounded-full bg-[#e99b6d]/50 transition group-hover:scale-[1.8] group-hover:opacity-0" />
             </span>
 
-            <span className="font-display text-xl font-bold tracking-tight text-[#142033] md:text-2xl">
+            <span className="font-display text-lg font-bold tracking-tight text-[#142033] sm:text-xl md:text-2xl">
               TripNest AI
             </span>
           </Link>
@@ -122,7 +122,7 @@ function LandingPage() {
                 event.currentTarget.style.backgroundColor = "#142033";
                 event.currentTarget.style.color = "#ffffff";
               }}
-              className="inline-flex items-center justify-center rounded-full px-8 py-3 text-xs font-black uppercase tracking-[0.18em] shadow-xl transition hover:-translate-y-0.5"
+              className="inline-flex items-center justify-center rounded-full px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.14em] shadow-xl transition hover:-translate-y-0.5 sm:px-6 sm:text-xs md:px-8"
             >
               Get Started
             </Link>
@@ -130,22 +130,22 @@ function LandingPage() {
         </div>
       </nav>
 
-      <header className="relative px-5 pb-24 pt-14 md:px-8 md:pb-32 md:pt-20">
+      <header className="relative overflow-hidden px-4 pb-16 pt-10 sm:px-5 sm:pb-20 md:px-8 md:pb-32 md:pt-20">
         <div className="pointer-events-none absolute -left-40 top-28 size-96 rounded-full bg-[#e99b6d]/10 blur-3xl" />
         <div className="pointer-events-none absolute -right-40 top-10 size-96 rounded-full bg-[#b9d8df]/30 blur-3xl" />
         <div className="pointer-events-none absolute bottom-0 left-1/2 size-96 -translate-x-1/2 rounded-full bg-[#c8d8c0]/20 blur-3xl" />
 
-        <div className="mx-auto grid max-w-7xl grid-cols-12 items-center gap-10">
+        <div className="mx-auto grid max-w-7xl grid-cols-12 items-center gap-10 lg:gap-14">
           <div className="col-span-12 animate-reveal lg:col-span-6">
-            <div className="mb-7 inline-flex items-center gap-3 rounded-full border border-[#142033]/5 bg-[#c8d8c0]/40 px-4 py-2 shadow-sm">
+            <div className="mb-6 inline-flex max-w-full items-center gap-3 rounded-full border border-[#142033]/5 bg-[#c8d8c0]/40 px-4 py-2 shadow-sm">
               <span className="size-2 rounded-full bg-[#e99b6d]" />
 
-              <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#142033]/70">
+              <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#142033]/70 sm:text-[10px] sm:tracking-[0.25em]">
                 Intelligence meets nostalgia
               </span>
             </div>
 
-            <h1 className="max-w-4xl text-balance font-display text-6xl leading-[0.95] tracking-tight text-[#142033] md:text-7xl lg:text-8xl">
+            <h1 className="max-w-full text-balance font-display text-[clamp(3rem,14vw,4.8rem)] leading-[0.92] tracking-tight text-[#142033] sm:text-[4.8rem] md:text-7xl lg:text-8xl">
               Turn your trips into{" "}
               <span className="italic text-[#e99b6d]">intelligent</span>{" "}
               memories.
@@ -157,7 +157,7 @@ function LandingPage() {
               elegant and unforgettable.
             </p>
 
-            <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+            <div className="mt-10 flex w-full flex-col gap-4 sm:flex-row">
               <Link
                 to="/register"
                 style={{
@@ -172,7 +172,7 @@ function LandingPage() {
                   event.currentTarget.style.backgroundColor = "#142033";
                   event.currentTarget.style.color = "#ffffff";
                 }}
-                className="group inline-flex items-center justify-center gap-3 rounded-full px-8 py-4 text-sm font-black uppercase tracking-[0.16em] shadow-2xl transition hover:-translate-y-1"
+                className="group inline-flex w-full items-center justify-center gap-3 rounded-full px-5 py-4 text-center text-xs font-black uppercase tracking-[0.14em] shadow-2xl transition hover:-translate-y-1 sm:w-auto sm:px-8 sm:text-sm sm:tracking-[0.16em]"
               >
                 Create Your First Trip
 
@@ -188,23 +188,23 @@ function LandingPage() {
 
               <Link
                 to="/login"
-                className="inline-flex items-center justify-center rounded-full border border-[#142033]/10 bg-white/80 px-8 py-4 text-sm font-black text-[#142033] shadow-sm transition hover:-translate-y-1 hover:bg-white"
+                className="inline-flex w-full items-center justify-center rounded-full border border-[#142033]/10 bg-white/80 px-5 py-4 text-center text-xs font-black text-[#142033] shadow-sm transition hover:-translate-y-1 hover:bg-white sm:w-auto sm:px-8 sm:text-sm"
               >
                 Login to Dashboard
               </Link>
             </div>
 
-            <div className="mt-12 grid max-w-xl grid-cols-3 gap-3">
+            <div className="mt-10 grid w-full max-w-md grid-cols-3 gap-2 sm:mt-12 sm:max-w-xl sm:gap-3">
               {stats.map((item) => (
                 <div
                   key={item.label}
-                  className="rounded-3xl border border-black/5 bg-white/70 p-4 shadow-sm backdrop-blur-xl"
+                  className="rounded-2xl border border-black/5 bg-white/70 p-3 shadow-sm backdrop-blur-xl sm:rounded-3xl sm:p-4"
                 >
-                  <p className="font-display text-3xl font-bold text-[#142033]">
+                  <p className="font-display text-2xl font-bold text-[#142033] sm:text-3xl">
                     {item.value}
                   </p>
 
-                  <p className="mt-1 text-[10px] font-semibold uppercase tracking-widest text-[#142033]/45">
+                  <p className="mt-1 text-[8px] font-semibold uppercase leading-4 tracking-[0.14em] text-[#142033]/45 sm:text-[10px] sm:tracking-widest">
                     {item.label}
                   </p>
                 </div>
@@ -212,8 +212,8 @@ function LandingPage() {
             </div>
           </div>
 
-          <div className="col-span-12 flex justify-center lg:col-span-6 lg:justify-end">
-            <div className="relative w-full max-w-xl animate-reveal">
+          <div className="col-span-12 mt-4 flex justify-center lg:col-span-6 lg:mt-0 lg:justify-end">
+            <div className="relative w-full max-w-[520px] animate-reveal">
               <div className="absolute -left-8 -top-8 hidden rounded-full bg-white/70 px-5 py-3 shadow-xl backdrop-blur-xl md:block">
                 <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#142033]/45">
                   AI mood detected
@@ -224,7 +224,7 @@ function LandingPage() {
                 </p>
               </div>
 
-              <div className="relative aspect-square overflow-hidden rounded-[3rem] bg-[#b9d8df]/30 shadow-2xl ring-1 ring-black/5">
+              <div className="relative aspect-square overflow-hidden rounded-[2rem] bg-[#b9d8df]/30 shadow-2xl ring-1 ring-black/5 sm:rounded-[3rem]">
                 <img
                   src={heroMap}
                   alt="Vintage aerial map"
@@ -233,28 +233,28 @@ function LandingPage() {
 
                 <div className="absolute inset-0 bg-gradient-to-tr from-white/10 via-transparent to-white/30" />
 
-                <div className="absolute left-8 top-8 rounded-full bg-white/85 px-4 py-2 shadow-lg backdrop-blur-xl">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#142033]/55">
+                <div className="absolute left-4 top-4 rounded-full bg-white/85 px-3 py-2 shadow-lg backdrop-blur-xl sm:left-8 sm:top-8 sm:px-4">
+                  <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-[#142033]/55 sm:text-[10px] sm:tracking-[0.18em]">
                     Live memory atlas
                   </span>
                 </div>
               </div>
 
-              <div className="glass-card absolute -left-4 -top-10 w-44 animate-float-slow rounded-[2rem] p-2 shadow-2xl md:-left-12 md:w-52">
+              <div className="glass-card absolute left-4 top-20 w-32 animate-float-slow rounded-[1.5rem] p-2 shadow-2xl sm:-left-4 sm:-top-10 sm:w-44 sm:rounded-[2rem] md:-left-12 md:w-52">
                 <img
                   src={floatLemons}
                   alt="Travel memory"
-                  className="aspect-[3/4] w-full rounded-[1.5rem] object-cover"
+                  className="aspect-[3/4] w-full rounded-[1.1rem] object-cover sm:rounded-[1.5rem]"
                 />
               </div>
 
-              <div className="glass-card absolute -bottom-8 right-3 flex items-center gap-3 rounded-[2rem] px-5 py-4 shadow-2xl md:right-8">
+              <div className="glass-card absolute bottom-4 right-4 flex max-w-[calc(100%-2rem)] items-center gap-3 rounded-[1.5rem] px-4 py-3 shadow-2xl sm:-bottom-8 sm:rounded-[2rem] sm:px-5 sm:py-4 md:right-8">
                 <span className="relative flex size-3">
                   <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-60" />
                   <span className="relative inline-flex size-3 rounded-full bg-emerald-400" />
                 </span>
 
-                <span className="font-mono text-[10px] uppercase tracking-tight text-[#142033]/75">
+                <span className="whitespace-nowrap font-mono text-[9px] uppercase tracking-tight text-[#142033]/75 sm:text-[10px]">
                   AI summarizing: 142 photos...
                 </span>
               </div>
@@ -265,7 +265,7 @@ function LandingPage() {
 
       <section
         id="features"
-        className="border-y border-[#142033]/5 bg-white/45 px-5 py-24 md:px-8"
+        className="border-y border-[#142033]/5 bg-white/45 px-4 py-16 sm:px-5 md:px-8 md:py-24"
       >
         <div className="mx-auto max-w-7xl">
           <div className="mb-12 flex flex-col justify-between gap-6 md:flex-row md:items-end">
@@ -274,7 +274,7 @@ function LandingPage() {
                 Core Features
               </span>
 
-              <h2 className="max-w-2xl font-display text-5xl tracking-tight text-[#142033] md:text-6xl">
+              <h2 className="max-w-2xl font-display text-[clamp(2.5rem,10vw,3.5rem)] leading-tight tracking-tight text-[#142033] md:text-6xl">
                 Everything your memories need.
               </h2>
             </div>
@@ -317,14 +317,14 @@ function LandingPage() {
         </div>
       </section>
 
-      <section id="map" className="px-5 py-28 md:px-8">
+      <section id="map" className="px-4 py-16 sm:px-5 md:px-8 md:py-28">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 lg:grid-cols-[0.8fr_1.2fr]">
-          <div className="rounded-[3rem] bg-[#142033] p-8 text-[#faf7f1] shadow-2xl">
+          <div className="rounded-[2rem] bg-[#142033] p-6 text-[#faf7f1] shadow-2xl sm:rounded-[3rem] sm:p-8">
             <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#faf7f1]/40">
               Memory Map
             </span>
 
-            <h2 className="mt-4 font-display text-5xl leading-tight text-[#faf7f1] md:text-6xl">
+            <h2 className="mt-4 font-display text-[clamp(2.5rem,10vw,3.6rem)] leading-tight text-[#faf7f1] md:text-6xl">
               See your world through memories.
             </h2>
 
@@ -357,7 +357,7 @@ function LandingPage() {
             </div>
           </div>
 
-          <div className="relative min-h-[560px] overflow-hidden rounded-[3rem] bg-[#b9d8df]/20 shadow-2xl ring-1 ring-black/5">
+          <div className="relative min-h-[420px] overflow-hidden rounded-[2rem] bg-[#b9d8df]/20 shadow-2xl ring-1 ring-black/5 sm:min-h-[560px] sm:rounded-[3rem]">
             <img
               src={heroMap}
               alt="TripNest memory map"
@@ -371,12 +371,12 @@ function LandingPage() {
             <MapPin top="56%" left="45%" label="Malta" />
             <MapPin top="35%" left="70%" label="Turkey" />
 
-            <div className="absolute left-6 right-6 top-6 rounded-[2rem] bg-white/85 p-5 shadow-xl backdrop-blur-xl md:left-auto md:w-80">
+            <div className="absolute left-4 right-4 top-4 rounded-[1.5rem] bg-white/85 p-4 shadow-xl backdrop-blur-xl sm:left-6 sm:right-6 sm:top-6 sm:rounded-[2rem] sm:p-5 md:left-auto md:w-80">
               <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#142033]/40">
                 AI Insight
               </p>
 
-              <h3 className="mt-2 font-display text-3xl text-[#142033]">
+              <h3 className="mt-2 font-display text-2xl text-[#142033] sm:text-3xl">
                 Most visited mood: peaceful
               </h3>
 
@@ -391,7 +391,7 @@ function LandingPage() {
 
       <section
         id="ai"
-        className="border-y border-[#142033]/5 bg-white/45 px-5 py-24 md:px-8"
+        className="border-y border-[#142033]/5 bg-white/45 px-4 py-16 sm:px-5 md:px-8 md:py-24"
       >
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 lg:grid-cols-[1.15fr_0.85fr]">
           <div>
@@ -399,7 +399,7 @@ function LandingPage() {
               AI Assistant
             </span>
 
-            <h2 className="max-w-3xl font-display text-5xl leading-tight tracking-tight text-[#142033] md:text-7xl">
+            <h2 className="max-w-3xl font-display text-[clamp(2.7rem,11vw,4.4rem)] leading-tight tracking-tight text-[#142033] md:text-7xl">
               Ask your memories anything.
             </h2>
 
@@ -426,14 +426,14 @@ function LandingPage() {
             </div>
           </div>
 
-          <div className="rounded-[3rem] bg-[#142033] p-6 text-[#faf7f1] shadow-2xl md:p-8">
+          <div className="rounded-[2rem] bg-[#142033] p-5 text-[#faf7f1] shadow-2xl sm:rounded-[3rem] md:p-8">
             <div className="mb-6 flex items-center justify-between">
               <div>
                 <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#faf7f1]/40">
                   Assistant Preview
                 </p>
 
-                <h3 className="mt-2 font-display text-4xl italic text-[#faf7f1]">
+                <h3 className="mt-2 font-display text-3xl italic text-[#faf7f1] sm:text-4xl">
                   TripNest Chat
                 </h3>
               </div>
@@ -454,7 +454,7 @@ function LandingPage() {
               </div>
 
               <div className="rounded-[2rem] border border-white/10 bg-white/5 p-4">
-                <div className="flex gap-3">
+                <div className="flex flex-col gap-3 sm:flex-row">
                   <input
                     type="text"
                     placeholder="Ask TripNest AI..."
@@ -478,7 +478,7 @@ function LandingPage() {
         </div>
       </section>
 
-      <section id="trips" className="px-5 py-32 md:px-8">
+      <section id="trips" className="px-4 py-20 sm:px-5 md:px-8 md:py-32">
         <div className="mx-auto max-w-7xl">
           <div className="mb-16 flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div>
@@ -486,7 +486,7 @@ function LandingPage() {
                 Archives
               </span>
 
-              <h2 className="font-display text-5xl tracking-tight text-[#142033] md:text-6xl">
+              <h2 className="font-display text-[clamp(2.7rem,11vw,3.8rem)] leading-tight tracking-tight text-[#142033] md:text-6xl">
                 Recent Journeys
               </h2>
 
@@ -510,7 +510,7 @@ function LandingPage() {
                 event.currentTarget.style.backgroundColor = "#142033";
                 event.currentTarget.style.color = "#ffffff";
               }}
-              className="inline-flex rounded-full px-7 py-4 text-sm font-black uppercase tracking-[0.16em] shadow-xl transition hover:-translate-y-1"
+              className="inline-flex w-full justify-center rounded-full px-7 py-4 text-center text-xs font-black uppercase tracking-[0.14em] shadow-xl transition hover:-translate-y-1 sm:w-auto sm:text-sm sm:tracking-[0.16em]"
             >
               Start Your Own
             </Link>
@@ -565,15 +565,15 @@ function LandingPage() {
         </div>
       </section>
 
-      <section className="px-5 pb-28 md:px-8">
-        <div className="mx-auto max-w-7xl overflow-hidden rounded-[3rem] bg-[#142033] p-8 text-[#faf7f1] shadow-2xl md:p-12">
+      <section className="px-4 pb-20 sm:px-5 md:px-8 md:pb-28">
+        <div className="mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-[#142033] p-6 text-[#faf7f1] shadow-2xl sm:rounded-[3rem] sm:p-8 md:p-12">
           <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-[1fr_auto]">
             <div>
               <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#faf7f1]/40">
                 Ready to start?
               </p>
 
-              <h2 className="mt-4 max-w-3xl font-display text-5xl leading-tight text-[#faf7f1] md:text-7xl">
+              <h2 className="mt-4 max-w-3xl font-display text-[clamp(2.7rem,11vw,4.2rem)] leading-tight text-[#faf7f1] md:text-7xl">
                 Build your personal atlas of memories.
               </h2>
 
@@ -589,7 +589,7 @@ function LandingPage() {
                 backgroundColor: "#e99b6d",
                 color: "#142033",
               }}
-              className="inline-flex items-center justify-center rounded-full px-8 py-4 text-sm font-black uppercase tracking-[0.18em] shadow-xl transition hover:-translate-y-1 hover:bg-[#f2b38d]"
+              className="inline-flex w-full items-center justify-center rounded-full px-6 py-4 text-center text-xs font-black uppercase tracking-[0.14em] shadow-xl transition hover:-translate-y-1 hover:bg-[#f2b38d] sm:w-auto sm:px-8 sm:text-sm sm:tracking-[0.18em]"
             >
               Create Account
             </Link>
@@ -597,7 +597,7 @@ function LandingPage() {
         </div>
       </section>
 
-      <footer className="border-t border-[#142033]/5 px-5 py-16 md:px-8">
+      <footer className="border-t border-[#142033]/5 px-4 py-12 sm:px-5 md:px-8 md:py-16">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-8 md:flex-row">
           <div className="flex items-center gap-3">
             <span className="size-2 rounded-full bg-[#e99b6d]" />
@@ -611,7 +611,7 @@ function LandingPage() {
             © 2026 Your personal map of memories.
           </p>
 
-          <div className="flex gap-8 text-[10px] font-semibold uppercase tracking-widest text-[#142033]/55">
+          <div className="flex flex-wrap justify-center gap-5 text-[10px] font-semibold uppercase tracking-widest text-[#142033]/55 sm:gap-8">
             <a href="#" className="transition hover:text-[#142033]">
               Privacy
             </a>
