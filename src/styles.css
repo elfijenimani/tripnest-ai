@@ -36,6 +36,9 @@
 
 html {
   scroll-behavior: smooth;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -45,6 +48,15 @@ body {
   background: #faf7f1;
   color: #142033;
   font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+#root {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 a {
@@ -61,6 +73,12 @@ select {
 
 button {
   cursor: pointer;
+}
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
 }
 
 .text-balance {
@@ -110,5 +128,403 @@ button {
 
   50% {
     transform: translateY(-10px);
+  }
+}
+
+/* ======================================================
+   TRIPNEST AI - MOBILE RESPONSIVE FIX
+   Rregullon pjesët që po dalin jashtë ekranit në telefon
+====================================================== */
+
+@media (max-width: 768px) {
+  body {
+    overflow-x: hidden;
+  }
+
+  .app,
+  .page,
+  .home-page,
+  .landing-page,
+  .dashboard-page,
+  .trip-page,
+  .trip-details-page,
+  main,
+  section {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  /* Header / Navbar */
+  .navbar,
+  .top-nav,
+  .hero-nav,
+  header {
+    width: 100%;
+    max-width: 100vw;
+    padding-left: 20px;
+    padding-right: 20px;
+    gap: 12px;
+    overflow-x: hidden;
+  }
+
+  .logo,
+  .brand,
+  .brand-name {
+    font-size: clamp(20px, 5vw, 28px);
+    white-space: nowrap;
+  }
+
+  .get-started-btn,
+  .nav-btn {
+    padding: 14px 20px;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    white-space: nowrap;
+  }
+
+  /* Landing page hero */
+  .hero,
+  .landing-hero,
+  .home-hero {
+    width: 100%;
+    max-width: 100vw;
+    padding-left: 20px;
+    padding-right: 20px;
+    overflow: hidden;
+  }
+
+  .hero h1,
+  .landing-title,
+  .home-title {
+    max-width: 100%;
+    font-size: clamp(44px, 13vw, 72px);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+
+  .hero p,
+  .landing-subtitle,
+  .home-subtitle {
+    max-width: 100%;
+    font-size: clamp(16px, 4.4vw, 20px);
+    line-height: 1.65;
+  }
+
+  .primary-cta,
+  .create-trip-btn {
+    width: 100%;
+    max-width: 100%;
+    justify-content: center;
+    padding: 20px 18px;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    white-space: nowrap;
+  }
+
+  .login-card,
+  .login-to-dashboard {
+    width: calc(100% - 40px);
+    max-width: calc(100% - 40px);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Dashboard stats */
+  .stats-row,
+  .metrics-row,
+  .dashboard-stats {
+    display: flex;
+    gap: 14px;
+    width: 100%;
+    overflow-x: auto;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 18px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .stats-row > *,
+  .metrics-row > *,
+  .dashboard-stats > *,
+  .stat-card,
+  .metric-card {
+    flex: 0 0 155px;
+    min-width: 155px;
+    max-width: 155px;
+    scroll-snap-align: start;
+  }
+
+  /* Map / atlas section */
+  .map-card,
+  .atlas-card,
+  .memory-map,
+  .dashboard-map {
+    width: calc(100% - 40px);
+    max-width: calc(100% - 40px);
+    margin-left: auto;
+    margin-right: auto;
+    min-height: 420px;
+    border-radius: 32px;
+    overflow: hidden;
+  }
+
+  .floating-photo,
+  .photo-polaroid,
+  .memory-photo-card {
+    width: 145px;
+    max-width: 42vw;
+    left: 18px;
+  }
+
+  .ai-status-pill,
+  .ai-summary-pill {
+    max-width: calc(100% - 32px);
+    right: 16px;
+    bottom: 20px;
+    white-space: nowrap;
+    overflow-x: auto;
+  }
+
+  /* Trip folder modal */
+  .trip-modal,
+  .trip-folder-modal,
+  .trip-detail-panel,
+  .trip-details-modal,
+  .folder-panel {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-radius: 28px 28px 0 0;
+    padding-bottom: calc(115px + env(safe-area-inset-bottom));
+  }
+
+  .trip-hero,
+  .folder-hero,
+  .trip-header-card {
+    width: 100%;
+    max-width: 100%;
+    min-height: 330px;
+    padding: 38px 22px 28px;
+    border-radius: 0;
+    overflow: hidden;
+  }
+
+  .close-btn,
+  .modal-close,
+  .folder-close-btn {
+    top: 20px;
+    right: 18px;
+    padding: 16px 22px;
+    font-size: 16px;
+  }
+
+  .trip-hero h1,
+  .folder-title,
+  .trip-title {
+    max-width: 100%;
+    font-size: clamp(50px, 14vw, 76px);
+    line-height: 0.92;
+    letter-spacing: -0.04em;
+    overflow-wrap: break-word;
+  }
+
+  .trip-location,
+  .folder-location {
+    font-size: 17px;
+  }
+
+  .trip-date,
+  .folder-date {
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    white-space: normal;
+  }
+
+  /* Tabs */
+  .trip-tabs,
+  .folder-tabs,
+  .detail-tabs {
+    width: 100%;
+    padding: 20px 20px 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .trip-tabs button,
+  .folder-tabs button,
+  .detail-tabs button {
+    flex: 1 1 calc(50% - 8px);
+    min-width: 135px;
+    padding: 17px 14px;
+    font-size: 14px;
+    letter-spacing: 0.18em;
+    white-space: nowrap;
+  }
+
+  .trip-tabs button:nth-child(3),
+  .folder-tabs button:nth-child(3),
+  .detail-tabs button:nth-child(3) {
+    flex: 1 1 100%;
+  }
+
+  /* Action buttons */
+  .trip-actions,
+  .folder-actions,
+  .detail-actions {
+    width: 100%;
+    padding: 16px 20px 24px;
+    display: grid;
+    grid-template-columns: 1fr 0.58fr;
+    gap: 14px;
+    align-items: stretch;
+  }
+
+  .trip-actions button,
+  .folder-actions button,
+  .detail-actions button {
+    margin: 0;
+    min-height: 58px;
+    padding: 15px 14px;
+    font-size: 14px;
+    letter-spacing: 0.15em;
+    white-space: nowrap;
+  }
+
+  .add-media-btn,
+  .upload-open-btn {
+    grid-column: 1 / 2;
+  }
+
+  .edit-btn {
+    grid-column: 2 / 3;
+  }
+
+  .delete-btn {
+    grid-column: 1 / 2;
+  }
+
+  /* Overview cards */
+  .overview-grid,
+  .details-grid,
+  .memory-grid {
+    width: calc(100% - 40px);
+    max-width: calc(100% - 40px);
+    margin: 0 auto 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .overview-card,
+  .detail-card,
+  .info-card {
+    min-width: 0;
+    padding: 22px 18px;
+    border-radius: 24px;
+    overflow: hidden;
+  }
+
+  .overview-card h3,
+  .detail-card h3,
+  .info-card h3 {
+    font-size: 11px;
+    letter-spacing: 0.22em;
+  }
+
+  .overview-card p,
+  .detail-card p,
+  .info-card p {
+    font-size: 20px;
+    overflow-wrap: break-word;
+  }
+
+  /* Folder summary */
+  .folder-summary,
+  .memory-details,
+  .summary-card {
+    width: calc(100% - 40px);
+    max-width: calc(100% - 40px);
+    margin: 0 auto 24px;
+    padding: 28px 22px;
+    border-radius: 28px;
+    overflow: hidden;
+  }
+
+  .folder-summary h2,
+  .memory-details h2,
+  .summary-card h2 {
+    font-size: clamp(42px, 12vw, 60px);
+    line-height: 1;
+    overflow-wrap: break-word;
+  }
+
+  /* Upload media */
+  .upload-card,
+  .media-upload-panel,
+  .upload-panel {
+    width: calc(100% - 40px);
+    max-width: calc(100% - 40px);
+    margin: 0 auto 24px;
+    padding: 28px 22px;
+    border-radius: 28px;
+    overflow: hidden;
+  }
+
+  .upload-card button,
+  .media-upload-panel button,
+  .upload-media-btn {
+    width: 100%;
+    max-width: 320px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* Extra fix për telefona më të vegjël */
+@media (max-width: 390px) {
+  .hero h1,
+  .landing-title,
+  .home-title {
+    font-size: clamp(40px, 12vw, 58px);
+  }
+
+  .trip-hero h1,
+  .folder-title,
+  .trip-title {
+    font-size: clamp(46px, 13vw, 64px);
+  }
+
+  .trip-actions,
+  .folder-actions,
+  .detail-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .add-media-btn,
+  .edit-btn,
+  .delete-btn,
+  .upload-open-btn {
+    grid-column: auto;
+    width: 100%;
+  }
+
+  .trip-tabs button,
+  .folder-tabs button,
+  .detail-tabs button {
+    flex: 1 1 100%;
+  }
+
+  .overview-grid,
+  .details-grid,
+  .memory-grid {
+    grid-template-columns: 1fr;
   }
 }
