@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import {
   useEffect,
   useMemo,
+  useRef,
   useState,
   type Dispatch,
   type FormEvent,
@@ -126,6 +127,8 @@ function DashboardPage() {
   const [isTripModalOpen, setIsTripModalOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
+  const detailsScrollYRef = useRef(0);
+
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
 
@@ -151,12 +154,45 @@ function DashboardPage() {
     if (!isDetailsOpen) return;
 
     const previousOverflow = document.body.style.overflow;
+    const previousPaddingRight = document.body.style.paddingRight;
+    const scrollbarWidth =
+      window.innerWidth - document.documentElement.clientWidth;
+
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+
     document.body.style.overflow = "hidden";
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsDetailsOpen(false);
+        setSelectedTrip(null);
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
 
     return () => {
       document.body.style.overflow = previousOverflow;
+      document.body.style.paddingRight = previousPaddingRight;
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isDetailsOpen]);
+
+  useEffect(() => {
+    if (!selectedTrip?.id) return;
+
+    const freshTrip = trips.find((trip) => trip.id === selectedTrip.id);
+
+    if (!freshTrip) {
+      setIsDetailsOpen(false);
+      setSelectedTrip(null);
+      return;
+    }
+
+    setSelectedTrip(freshTrip);
+  }, [trips, selectedTrip?.id]);
 
   const userName = getDisplayName({
     fullName:
@@ -275,20 +311,22 @@ function DashboardPage() {
   }
 
   function openTripDetails(trip: Trip) {
+    detailsScrollYRef.current = window.scrollY;
     setSelectedTrip(trip);
+    setGlobalError("");
     setIsDetailsOpen(true);
-
-    window.setTimeout(() => {
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    }, 50);
   }
 
   function closeTripDetails() {
-    setSelectedTrip(null);
     setIsDetailsOpen(false);
+    setSelectedTrip(null);
+
+    window.requestAnimationFrame(() => {
+      window.scrollTo({
+        top: detailsScrollYRef.current,
+        behavior: "auto",
+      });
+    });
   }
 
   async function handleSaveTrip(event: FormEvent<HTMLFormElement>) {
@@ -1188,6 +1226,7 @@ function DashboardPage() {
 
       {isDetailsOpen && selectedTrip && (
         <TripDetailsPanel
+          key={selectedTrip.id}
           trip={selectedTrip}
           onClose={closeTripDetails}
           onEdit={() => {
