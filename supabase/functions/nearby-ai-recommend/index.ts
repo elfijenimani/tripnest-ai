@@ -9,11 +9,17 @@ type NearbyPlace = {
   id: string;
   name: string;
   type: string;
+  category?: string;
+  address?: string;
   latitude: number;
   longitude: number;
   distance: number;
-  description: string;
-  tags: Record<string, string>;
+  rating?: number | null;
+  userRatingCount?: number;
+  googleMapsUri?: string;
+  openNow?: boolean | null;
+  description?: string;
+  tags?: Record<string, unknown>;
 };
 
 function jsonResponse(body: unknown, status = 200) {
@@ -56,13 +62,30 @@ function safeJsonParse(text: string) {
   }
 }
 
+function cleanPlacesForAI(places: NearbyPlace[]) {
+  return places.slice(0, 15).map((place) => ({
+    id: place.id,
+    name: place.name,
+    type: place.type,
+    category: place.category,
+    address: place.address,
+    distance: place.distance,
+    rating: place.rating,
+    userRatingCount: place.userRatingCount,
+    openNow: place.openNow,
+    googleMapsUri: place.googleMapsUri,
+    description: place.description,
+    tags: place.tags,
+  }));
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   if (req.method !== "POST") {
-    return jsonResponse({ error: "Method not allowed." }, 405);
+    return jsonResponse({ ok: false, error: "Method not allowed." }, 405);
   }
 
   try {
@@ -70,7 +93,10 @@ Deno.serve(async (req) => {
     const openAiModel = Deno.env.get("OPENAI_MODEL") || "gpt-4.1-mini";
 
     if (!openAiKey) {
-      return jsonResponse({ error: "OPENAI_API_KEY is missing." }, 500);
+      return jsonResponse(
+        { ok: false, error: "OPENAI_API_KEY is missing." },
+        500
+      );
     }
 
     const body = await req.json();
@@ -81,11 +107,16 @@ Deno.serve(async (req) => {
     const places = (body.places ?? []) as NearbyPlace[];
 
     if (!location?.latitude || !location?.longitude) {
-      return jsonResponse({ error: "Location is required." }, 400);
+      return jsonResponse(
+        { ok: false, error: "Location is required." },
+        400
+      );
     }
 
     if (!Array.isArray(places) || places.length === 0) {
       return jsonResponse({
+        ok: false,
+        error: "No real places were provided for AI ranking.",
         answer:
           "I could not recommend places because there are no real map results available yet.",
         rankedPlaceIds: [],
@@ -97,41 +128,19 @@ Deno.serve(async (req) => {
       });
     }
 
-    const instruction = `
-You are an AI travel recommendation assistant.
-
-You receive real nearby places from map data. 
-You must NOT invent new places.
-You must only recommend places from the provided list.
-You should rank the best places based on:
-- user need
-- distance
-- category
-- tags
-- place type
-- usefulness for travel
-- usefulness for content/photos
-- food/coffee/tourism relevance
-
-Answer in the same language as the user's request when possible.
-
-Return ONLY valid JSON in this exact format:
-{
-  "answer": "string",
-  "rankedPlaceIds": ["place-id-1", "place-id-2"],
-  "highlights": [
-    {
-      "placeId": "place-id",
-      "reason": "why this place is recommended",
-      "bestFor": "coffee break / food / photos / museum / quick visit / etc"
-    }
-  ],
-  "suggestions": ["suggestion 1", "suggestion 2"]
-}
-`;
+    const safePlaces = cleanPlacesForAI(places);
 
     const prompt = `
-${instruction}
+You are TripNest AI, an AI travel recommendation assistant.
+
+Important rules:
+- Recommend ONLY from the real places provided in the JSON list.
+- Do NOT invent places.
+- Do NOT create fake addresses.
+- Do NOT change place names.
+- Use the place IDs exactly as provided.
+- Rank places based on user need, distance, rating, number of reviews, category, open status, and travel usefulness.
+- Answer in the same language as the user's request when possible.
 
 User current location:
 ${JSON.stringify(location, null, 2)}
@@ -142,8 +151,22 @@ ${category}
 User request:
 ${userNeed || "Recommend the best nearby places from this category."}
 
-Real nearby places from map data:
-${JSON.stringify(places, null, 2)}
+Real nearby places from Google Places:
+${JSON.stringify(safePlaces, null, 2)}
+
+Return ONLY valid JSON in this exact format:
+{
+  "answer": "string",
+  "rankedPlaceIds": ["place-id-1", "place-id-2", "place-id-3"],
+  "highlights": [
+    {
+      "placeId": "place-id",
+      "reason": "why this real place is recommended",
+      "bestFor": "quiet coffee / food / photos / museum / quick visit / etc"
+    }
+  ],
+  "suggestions": ["suggestion 1", "suggestion 2"]
+}
 `;
 
     const openAiResponse = await fetch("https://api.openai.com/v1/responses", {
@@ -165,6 +188,7 @@ ${JSON.stringify(places, null, 2)}
             ],
           },
         ],
+        temperature: 0.2,
       }),
     });
 
@@ -173,6 +197,7 @@ ${JSON.stringify(places, null, 2)}
     if (!openAiResponse.ok) {
       return jsonResponse(
         {
+          ok: false,
           error:
             openAiJson?.error?.message ||
             "OpenAI could not generate recommendations.",
@@ -186,6 +211,7 @@ ${JSON.stringify(places, null, 2)}
 
     if (!parsed) {
       return jsonResponse({
+        ok: true,
         answer: outputText || "AI generated an empty response.",
         rankedPlaceIds: [],
         highlights: [],
@@ -193,12 +219,23 @@ ${JSON.stringify(places, null, 2)}
       });
     }
 
+    const validPlaceIds = new Set(safePlaces.map((place) => place.id));
+
+    const rankedPlaceIds = Array.isArray(parsed.rankedPlaceIds)
+      ? parsed.rankedPlaceIds.filter((id: string) => validPlaceIds.has(id))
+      : [];
+
+    const highlights = Array.isArray(parsed.highlights)
+      ? parsed.highlights.filter((highlight: any) =>
+          validPlaceIds.has(highlight.placeId)
+        )
+      : [];
+
     return jsonResponse({
+      ok: true,
       answer: parsed.answer ?? "AI recommendation generated.",
-      rankedPlaceIds: Array.isArray(parsed.rankedPlaceIds)
-        ? parsed.rankedPlaceIds
-        : [],
-      highlights: Array.isArray(parsed.highlights) ? parsed.highlights : [],
+      rankedPlaceIds,
+      highlights,
       suggestions: Array.isArray(parsed.suggestions)
         ? parsed.suggestions
         : [],
@@ -207,6 +244,6 @@ ${JSON.stringify(places, null, 2)}
     const message =
       error instanceof Error ? error.message : "Unexpected server error.";
 
-    return jsonResponse({ error: message }, 500);
+    return jsonResponse({ ok: false, error: message }, 500);
   }
 });
