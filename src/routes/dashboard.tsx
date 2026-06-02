@@ -18,6 +18,7 @@ import { TripDetailsPanel } from "@/components/TripDetailsPanel";
 import { useAuth } from "@/hooks/useAuth";
 import { useTrips } from "@/hooks/useTrips";
 import { signOutUser } from "@/lib/auth-service";
+import { askDashboardAI } from "@/lib/dashboard-ai-service";
 import {
   TRIP_MOODS,
   type CreateTripInput,
@@ -25,7 +26,6 @@ import {
   type TripMood,
 } from "@/lib/types";
 import {
-  formatDateRange,
   getDisplayName,
   getMoodClass,
   getPinColor,
@@ -44,29 +44,6 @@ const emptyForm: CreateTripInput = {
   mood: "Adventurous",
   description: "",
 };
-
-const aiPrompts = [
-  {
-    tag: "Story",
-    prompt: "Create a short story from my latest trip.",
-    icon: "✦",
-  },
-  {
-    tag: "Mood",
-    prompt: "Show me my most peaceful memories.",
-    icon: "◐",
-  },
-  {
-    tag: "Plan",
-    prompt: "Suggest my next trip idea based on my memories.",
-    icon: "⌖",
-  },
-  {
-    tag: "Caption",
-    prompt: "Write an Instagram caption for my Italy trip.",
-    icon: "✎",
-  },
-];
 
 const mapPositions = [
   { top: "30%", left: "38%" },
@@ -142,7 +119,7 @@ function DashboardPage() {
       id: "welcome",
       role: "assistant",
       content:
-        "Hi, I am TripNest AI. Ask me to summarize your trips, write captions, create a travel story, find calm memories or suggest your next travel plan based on your saved memories.",
+        "Hi, I am TripNest AI. Ask me anything about your saved trips, memories, moods, destinations, captions, stories, photos, or next travel ideas.",
       createdAt: "Ready",
     },
   ]);
@@ -256,6 +233,7 @@ function DashboardPage() {
   }, [trips]);
 
   const latestTrip = trips[0];
+
   const completedMemories = useMemo(() => {
     return trips.filter((trip) => trip.description?.trim()).length;
   }, [trips]);
@@ -411,6 +389,13 @@ function DashboardPage() {
       createdAt: formatShortTime(),
     };
 
+    const historyForAI = [...aiMessages, userMessage]
+      .filter((message) => message.id !== "welcome")
+      .map((message) => ({
+        role: message.role,
+        content: message.content,
+      }));
+
     setAiMessages((current) => [...current, userMessage]);
     setAiQuestion("");
     setGlobalError("");
@@ -418,22 +403,15 @@ function DashboardPage() {
     setAiCopied(false);
 
     try {
-      await wait(450);
-
-      const answer = generateTripNestAnswer({
+      const result = await askDashboardAI({
         question: cleanQuestion,
-        trips,
-        countries,
-        moodStats,
-        latestTrip,
-        dominantMood,
-        memoryCompletion,
+        history: historyForAI,
       });
 
       const assistantMessage: AiMessage = {
         id: `assistant-${Date.now()}`,
         role: "assistant",
-        content: answer,
+        content: result.answer,
         createdAt: formatShortTime(),
       };
 
@@ -662,7 +640,7 @@ function DashboardPage() {
                 href="#ai"
                 icon="AI"
                 title="Ask TripNest AI"
-                description="Generate stories and captions"
+                description="Ask anything about your trips"
               />
 
               <QuickActionLink
@@ -671,7 +649,6 @@ function DashboardPage() {
                 title="AI Travel Companion"
                 description="Location, camera and nearby places"
               />
-
             </div>
           </aside>
         </section>
@@ -875,7 +852,7 @@ function DashboardPage() {
 
                 <div>
                   <p className="font-mono text-[10px] uppercase tracking-widest text-background/40">
-                    Functional AI Assistant
+                    Real AI Assistant
                   </p>
 
                   <h3 className="font-display text-5xl italic">Ask TripNest</h3>
@@ -893,40 +870,13 @@ function DashboardPage() {
             </div>
 
             <p className="relative mb-6 max-w-2xl text-sm leading-relaxed text-background/60">
-              This AI section is connected to your real trip data. It can
-              summarize memories, find moods, create captions, generate travel
-              stories and suggest next-trip ideas from the trips saved in your
-              dashboard.
+              Ask freely about your trips, photos, memories, destinations,
+              captions, travel style, or next travel ideas. This section is
+              connected to your real saved TripNest data through AI.
             </p>
 
-            <div className="relative grid gap-3 md:grid-cols-2">
-              {aiPrompts.map((item) => (
-                <button
-                  key={item.prompt}
-                  type="button"
-                  onClick={() => void askTripNestAI(item.prompt)}
-                  disabled={aiLoading}
-                  className="group rounded-[2rem] border border-white/10 bg-white/5 p-5 text-left transition hover:-translate-y-0.5 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  <div className="mb-4 flex items-center justify-between">
-                    <span className="flex size-10 items-center justify-center rounded-full bg-white/10 font-black text-sunset">
-                      {item.icon}
-                    </span>
-
-                    <span className="font-mono text-[10px] uppercase tracking-widest text-background/35">
-                      {item.tag}
-                    </span>
-                  </div>
-
-                  <span className="text-sm leading-relaxed text-background/80">
-                    “{item.prompt}”
-                  </span>
-                </button>
-              ))}
-            </div>
-
             <div className="relative mt-6 overflow-hidden rounded-[2rem] border border-white/10 bg-white/5">
-              <div className="max-h-[430px] space-y-4 overflow-y-auto p-4 md:p-5">
+              <div className="max-h-[520px] space-y-4 overflow-y-auto p-4 md:p-5">
                 {aiMessages.map((message) => (
                   <div
                     key={message.id}
@@ -962,7 +912,7 @@ function DashboardPage() {
                   <div className="flex justify-start">
                     <div className="rounded-[1.75rem] border border-white/10 bg-white/10 px-5 py-4 text-sm text-background/65">
                       <span className="mr-2 inline-flex size-2 animate-pulse rounded-full bg-sunset" />
-                      TripNest AI is analyzing your memories...
+                      TripNest AI is analyzing your real travel data...
                     </div>
                   </div>
                 )}
@@ -977,7 +927,7 @@ function DashboardPage() {
                     value={aiQuestion}
                     onChange={(event) => setAiQuestion(event.target.value)}
                     type="text"
-                    placeholder="Ask about your memories, e.g. write a caption for my latest trip..."
+                    placeholder="Ask anything about your trips, photos, moods, captions or next travel ideas..."
                     className="w-full rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm text-background outline-none placeholder:text-background/40 focus:ring-2 focus:ring-sunset/30"
                   />
 
@@ -1252,20 +1202,6 @@ type BuildAiInsightsInput = {
   latestTrip: Trip | undefined;
 };
 
-type GenerateTripNestAnswerInput = {
-  question: string;
-  trips: Trip[];
-  countries: string[];
-  moodStats: Array<{ mood: TripMood; count: number; percentage: number }>;
-  latestTrip: Trip | undefined;
-  dominantMood: { mood: TripMood; count: number; percentage: number } | null;
-  memoryCompletion: number;
-};
-
-function wait(ms: number) {
-  return new Promise((resolve) => window.setTimeout(resolve, ms));
-}
-
 function formatShortTime() {
   return new Intl.DateTimeFormat("en", {
     hour: "2-digit",
@@ -1334,350 +1270,12 @@ function buildAiInsights({
   ];
 }
 
-function generateTripNestAnswer({
-  question,
-  trips,
-  countries,
-  moodStats,
-  latestTrip,
-  dominantMood,
-  memoryCompletion,
-}: GenerateTripNestAnswerInput) {
-  const normalizedQuestion = question.toLowerCase();
-
-  if (trips.length === 0) {
-    return [
-      "I do not see any saved trips yet, so I cannot analyze real memories at the moment.",
-      "",
-      "Start by clicking Create Trip and add at least: trip name, country, city, mood and a short description.",
-      "After that, I can generate captions, stories, peaceful memories, next-trip ideas and a travel profile from your saved data.",
-    ].join("\n");
-  }
-
-  if (
-    includesAny(normalizedQuestion, [
-      "caption",
-      "instagram",
-      "post",
-      "quote",
-      "mbishkrim",
-    ])
-  ) {
-    const trip = findBestTripMatch(question, trips) ?? latestTrip ?? trips[0];
-    return generateCaptionAnswer(trip);
-  }
-
-  if (
-    includesAny(normalizedQuestion, [
-      "story",
-      "tregim",
-      "narrative",
-      "latest trip",
-      "latest memory",
-    ])
-  ) {
-    const trip = findBestTripMatch(question, trips) ?? latestTrip ?? trips[0];
-    return generateStoryAnswer(trip);
-  }
-
-  if (
-    includesAny(normalizedQuestion, [
-      "peaceful",
-      "calm",
-      "relax",
-      "quiet",
-      "paqe",
-      "qete",
-      "qetë",
-    ])
-  ) {
-    const calmTrips = getTripsByMood(trips, [
-      "Relaxed",
-      "Romantic",
-      "Cultural",
-    ]);
-
-    return generateMoodAnswer(
-      calmTrips.length > 0 ? calmTrips : trips,
-      "These are the memories that feel the most peaceful from your saved trips:"
-    );
-  }
-
-  if (
-    includesAny(normalizedQuestion, [
-      "summary",
-      "summarize",
-      "analyze",
-      "profile",
-      "overview",
-      "stat",
-      "who am i",
-      "personality",
-      "permbledh",
-      "përmbledh",
-    ])
-  ) {
-    return generateSummaryAnswer({
-      trips,
-      countries,
-      moodStats,
-      dominantMood,
-      memoryCompletion,
-    });
-  }
-
-  if (
-    includesAny(normalizedQuestion, [
-      "where",
-      "country",
-      "countries",
-      "city",
-      "cities",
-      "visited",
-      "places",
-      "destinations",
-      "ku",
-      "shtet",
-      "qytet",
-    ])
-  ) {
-    return generatePlacesAnswer(trips, countries);
-  }
-
-  if (
-    includesAny(normalizedQuestion, [
-      "recommend",
-      "suggest",
-      "next",
-      "idea",
-      "plan",
-      "propozo",
-      "sugjero",
-    ])
-  ) {
-    return generateRecommendationAnswer({ trips, dominantMood });
-  }
-
-  const matchedTrips = rankTripsByQuery(question, trips).slice(0, 3);
-
-  return [
-    "Here is what I found from your travel memories:",
-    "",
-    ...matchedTrips.map((trip, index) => `${index + 1}. ${formatTripLine(trip)}`),
-    "",
-    latestTrip
-      ? `Your latest saved memory is ${latestTrip.title}. You can ask me: “write a story for ${latestTrip.title}”, “make a caption”, or “suggest my next trip idea”.`
-      : "You can ask me to create a story, caption, summary or next-trip ideas.",
-  ].join("\n");
-}
-
-function generateCaptionAnswer(trip: Trip) {
-  const place = formatTripPlace(trip);
-  const mood = trip.mood ?? "memorable";
-  const descriptionHint = trip.description?.trim()
-    ? ` Inspired by your note: ${trip.description.trim()}`
-    : "";
-
-  return [
-    `Caption for ${trip.title}:`,
-    "",
-    `“${place} felt like a ${mood.toLowerCase()} chapter I will always want to revisit.”`,
-    "",
-    "Alternative caption:",
-    `“Collecting moments in ${place}, one memory at a time.”`,
-    "",
-    `Hashtags: #TripNest #TravelMemory #${sanitizeHashtag(
-      trip.country
-    )} #${sanitizeHashtag(mood)}${
-      trip.city ? ` #${sanitizeHashtag(trip.city)}` : ""
-    }`,
-    descriptionHint,
-  ].join("\n");
-}
-
-function generateStoryAnswer(trip: Trip) {
-  const place = formatTripPlace(trip);
-  const dateRange = formatDateRange(trip.start_date, trip.end_date);
-  const description = trip.description?.trim();
-
-  return [
-    `Short story from ${trip.title}:`,
-    "",
-    `The memory begins in ${place}${
-      dateRange ? `, during ${dateRange}` : ""
-    }. The mood of this trip feels ${
-      trip.mood?.toLowerCase() ?? "special"
-    }, like a chapter saved not only as a destination, but as a feeling.`,
-    description
-      ? `What makes it personal is this detail: ${description}`
-      : "Even without many notes yet, this trip already has the shape of a story: a place, a mood, and a moment worth keeping.",
-    "",
-    "AI suggestion: add 2-3 specific details, such as food, weather, people or a favorite place, and I can make this story much richer.",
-  ].join("\n");
-}
-
-function generateMoodAnswer(trips: Trip[], intro: string) {
-  return [
-    intro,
-    "",
-    ...trips.slice(0, 5).map((trip, index) => `${index + 1}. ${formatTripLine(trip)}`),
-    "",
-    "AI tip: peaceful memories usually become better stories when you add small sensory details like colors, weather, sounds or a favorite view.",
-  ].join("\n");
-}
-
-function generateSummaryAnswer({
-  trips,
-  countries,
-  moodStats,
-  dominantMood,
-  memoryCompletion,
-}: Pick<
-  GenerateTripNestAnswerInput,
-  "trips" | "countries" | "moodStats" | "dominantMood" | "memoryCompletion"
->) {
-  const topMoods = [...moodStats]
-    .sort((a, b) => b.count - a.count)
-    .filter((item) => item.count > 0)
-    .slice(0, 3);
-
-  return [
-    "TripNest AI summary:",
-    "",
-    `• Total trips: ${trips.length}`,
-    `• Countries: ${
-      countries.length > 0 ? countries.join(", ") : "No countries yet"
-    }`,
-    `• Main travel personality: ${
-      dominantMood ? `${dominantMood.mood} Explorer` : "Memory Collector"
-    }`,
-    `• Memory completion: ${memoryCompletion}%`,
-    `• Top moods: ${
-      topMoods.length > 0
-        ? topMoods.map((item) => `${item.mood} (${item.count})`).join(", ")
-        : "No mood pattern yet"
-    }`,
-    "",
-    memoryCompletion < 50
-      ? "Recommendation: add richer descriptions to your trips so AI can generate stronger stories and captions."
-      : "Recommendation: your archive has enough detail for strong AI-generated stories, captions and highlights.",
-  ].join("\n");
-}
-
-function generatePlacesAnswer(trips: Trip[], countries: string[]) {
-  const cities = Array.from(
-    new Set(
-      trips
-        .map((trip) => trip.city)
-        .filter((city): city is string => Boolean(city))
-    )
-  );
-
-  return [
-    "Your saved travel places:",
-    "",
-    `Countries: ${
-      countries.length > 0 ? countries.join(", ") : "No countries saved"
-    }`,
-    `Cities: ${cities.length > 0 ? cities.join(", ") : "No cities saved"}`,
-    "",
-    "Recent places:",
-    ...trips.slice(0, 5).map((trip, index) => `${index + 1}. ${formatTripLine(trip)}`),
-  ].join("\n");
-}
-
-function generateRecommendationAnswer({
-  trips,
-  dominantMood,
-}: Pick<GenerateTripNestAnswerInput, "trips" | "dominantMood">) {
-  const favoriteCountry = getMostRepeatedValue(trips.map((trip) => trip.country));
-  const mood = dominantMood?.mood ?? "Adventurous";
-
-  const recommendationByMood: Record<string, string> = {
-    Adventurous: "a mountain hike, island trip or road trip with many stops",
-    Relaxed: "a calm seaside town, lake cabin or wellness weekend",
-    Cultural: "a city with museums, old streets, galleries and local food",
-    Romantic: "a sunset destination, historic city or quiet coastal place",
-    Foodie: "a food-focused city with markets, cafés and local restaurants",
-  };
-
-  return [
-    "Next-trip idea based on your memories:",
-    "",
-    `Because your profile looks mostly ${mood.toLowerCase()}, I would suggest ${
-      recommendationByMood[mood] ??
-      "a balanced destination with culture, food and nature"
-    }.`,
-    favoriteCountry
-      ? `You also seem connected to ${favoriteCountry}, so you could either revisit it with a new theme or choose a nearby country for contrast.`
-      : "After you add more countries, I can make this recommendation more personal.",
-    "",
-    "Suggested plan: choose one city, add 3 places you want to visit, then let TripNest AI create a mini itinerary and captions.",
-  ].join("\n");
-}
-
-function findBestTripMatch(question: string, trips: Trip[]) {
-  const rankedTrips = rankTripsByQuery(question, trips);
-  return rankedTrips[0] ?? null;
-}
-
-function rankTripsByQuery(question: string, trips: Trip[]) {
-  const queryWords = question
-    .toLowerCase()
-    .split(/\W+/)
-    .filter((word) => word.length > 2);
-
-  return [...trips].sort((a, b) => {
-    return getTripMatchScore(b, queryWords) - getTripMatchScore(a, queryWords);
-  });
-}
-
-function getTripMatchScore(trip: Trip, queryWords: string[]) {
-  const text = [trip.title, trip.country, trip.city, trip.mood, trip.description]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-
-  return queryWords.reduce(
-    (score, word) => score + (text.includes(word) ? 1 : 0),
-    0
-  );
-}
-
-function getTripsByMood(trips: Trip[], moods: string[]) {
-  return trips.filter((trip) => trip.mood && moods.includes(trip.mood));
-}
-
-function includesAny(text: string, keywords: string[]) {
-  return keywords.some((keyword) => text.includes(keyword));
-}
-
 function formatTripPlace(trip: Trip) {
   return (
     [trip.city, trip.country].filter(Boolean).join(", ") ||
     trip.country ||
     trip.title
   );
-}
-
-function formatTripLine(trip: Trip) {
-  const place = formatTripPlace(trip);
-  const date = formatDateRange(trip.start_date, trip.end_date);
-  const mood = trip.mood ? `Mood: ${trip.mood}` : "Mood not set";
-
-  const description = trip.description?.trim()
-    ? ` — ${trip.description.trim().slice(0, 120)}${
-        trip.description.trim().length > 120 ? "..." : ""
-      }`
-    : "";
-
-  return `${trip.title} • ${place}${
-    date ? ` • ${date}` : ""
-  } • ${mood}${description}`;
-}
-
-function sanitizeHashtag(value: string) {
-  return value.replace(/[^a-zA-Z0-9]/g, "");
 }
 
 function getMostRepeatedValue(values: Array<string | null | undefined>) {
