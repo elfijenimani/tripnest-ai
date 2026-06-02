@@ -2,8 +2,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import {
   askNearbyAI,
+  getReadableLocationName,
+  getRealNearbyPlaces,
   type NearbyAIHighlight,
-} from "@/lib/nearby-ai-service";
+  type RealNearbyPlace,
+} from "@/lib/realNearbyPlaces";
 
 type PlaceCategory = "cafes" | "restaurants" | "attractions" | "museums";
 
@@ -15,28 +18,7 @@ type LiveLocation = {
   address: string;
 };
 
-type NearbyPlace = {
-  id: string;
-  name: string;
-  type: string;
-  latitude: number;
-  longitude: number;
-  distance: number;
-  description: string;
-  tags: Record<string, string>;
-};
-
-type OverpassElement = {
-  type: "node" | "way" | "relation";
-  id: number;
-  lat?: number;
-  lon?: number;
-  center?: {
-    lat: number;
-    lon: number;
-  };
-  tags?: Record<string, string>;
-};
+type NearbyPlace = RealNearbyPlace;
 
 const categories: Array<{
   id: PlaceCategory;
@@ -70,11 +52,6 @@ const categories: Array<{
   },
 ];
 
-const OVERPASS_ENDPOINTS = [
-  "https://overpass-api.de/api/interpreter",
-  "https://overpass.kumi.systems/api/interpreter",
-];
-
 function formatCoordinate(value: number) {
   return value.toFixed(6);
 }
@@ -85,276 +62,18 @@ function formatAccuracy(value: number) {
 }
 
 function formatDistance(distance: number) {
+  if (!Number.isFinite(distance)) return "Nearby";
   if (distance < 1000) return `${Math.round(distance)}m`;
   return `${(distance / 1000).toFixed(1)}km`;
 }
 
-function toRadians(value: number) {
-  return (value * Math.PI) / 180;
-}
+function formatRating(place: NearbyPlace) {
+  if (!place.rating) return null;
 
-function calculateDistanceMeters(
-  fromLat: number,
-  fromLon: number,
-  toLat: number,
-  toLon: number
-) {
-  const earthRadius = 6371000;
+  const reviews =
+    place.userRatingCount > 0 ? ` · ${place.userRatingCount} reviews` : "";
 
-  const dLat = toRadians(toLat - fromLat);
-  const dLon = toRadians(toLon - fromLon);
-
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRadians(fromLat)) *
-      Math.cos(toRadians(toLat)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-  return earthRadius * c;
-}
-
-async function getAddressFromCoordinates(latitude: number, longitude: number) {
-  try {
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`
-    );
-
-    if (!response.ok) return "Current location detected";
-
-    const data = await response.json();
-
-    return (
-      data.display_name ||
-      data.address?.city ||
-      data.address?.town ||
-      data.address?.village ||
-      "Current location detected"
-    );
-  } catch {
-    return "Current location detected";
-  }
-}
-
-function getOverpassFilters(category: PlaceCategory) {
-  if (category === "cafes") {
-    return [`["amenity"="cafe"]`];
-  }
-
-  if (category === "restaurants") {
-    return [`["amenity"~"restaurant|fast_food|food_court"]`];
-  }
-
-  if (category === "attractions") {
-    return [`["tourism"~"attraction|viewpoint|artwork"]`];
-  }
-
-  return [`["tourism"~"museum|gallery"]`];
-}
-
-function buildOverpassQuery({
-  latitude,
-  longitude,
-  category,
-  radius,
-}: {
-  latitude: number;
-  longitude: number;
-  category: PlaceCategory;
-  radius: number;
-}) {
-  const filters = getOverpassFilters(category);
-
-  const queryBlocks = filters.flatMap((filter) => [
-    `node(around:${radius},${latitude},${longitude})${filter};`,
-    `way(around:${radius},${latitude},${longitude})${filter};`,
-    `relation(around:${radius},${latitude},${longitude})${filter};`,
-  ]);
-
-  return `
-[out:json][timeout:25];
-(
-${queryBlocks.join("\n")}
-);
-out center 30;
-`;
-}
-
-function getFallbackPlaceName(
-  tags: Record<string, string>,
-  category: PlaceCategory
-) {
-  if (category === "cafes") {
-    return tags.amenity === "cafe" ? "Unnamed Cafe" : null;
-  }
-
-  if (category === "restaurants") {
-    if (tags.amenity === "restaurant") return "Unnamed Restaurant";
-    if (tags.amenity === "fast_food") return "Fast Food Place";
-    if (tags.amenity === "food_court") return "Food Court";
-  }
-
-  if (category === "attractions") {
-    if (tags.tourism === "viewpoint") return "Viewpoint";
-    if (tags.tourism === "attraction") return "Tourist Attraction";
-    if (tags.tourism === "artwork") return "Artwork";
-  }
-
-  if (category === "museums") {
-    if (tags.tourism === "museum") return "Museum";
-    if (tags.tourism === "gallery") return "Gallery";
-  }
-
-  return null;
-}
-
-function getPlaceName(
-  tags: Record<string, string> | undefined,
-  category: PlaceCategory
-) {
-  if (!tags) return null;
-
-  return (
-    tags.name ||
-    tags["name:en"] ||
-    tags.brand ||
-    tags.operator ||
-    getFallbackPlaceName(tags, category)
-  );
-}
-
-function getPlaceType(tags: Record<string, string>, category: PlaceCategory) {
-  if (tags.amenity) return tags.amenity.replace(/_/g, " ");
-  if (tags.tourism) return tags.tourism.replace(/_/g, " ");
-
-  return category;
-}
-
-function buildPlaceDescription(
-  tags: Record<string, string>,
-  category: PlaceCategory
-) {
-  const parts: string[] = [];
-
-  if (tags.cuisine) {
-    parts.push(`Cuisine: ${tags.cuisine.replace(/;/g, ", ")}`);
-  }
-
-  if (tags.opening_hours) {
-    parts.push(`Opening hours: ${tags.opening_hours}`);
-  }
-
-  if (tags["addr:street"]) {
-    parts.push(`Street: ${tags["addr:street"]}`);
-  }
-
-  if (tags.phone) {
-    parts.push(`Phone: ${tags.phone}`);
-  }
-
-  if (parts.length > 0) {
-    return parts.join(" · ");
-  }
-
-  if (category === "cafes") {
-    return "Real cafe found near your current location.";
-  }
-
-  if (category === "restaurants") {
-    return "Real restaurant or food place found near your current location.";
-  }
-
-  if (category === "attractions") {
-    return "Real attraction found near your current location.";
-  }
-
-  return "Real museum or gallery found near your current location.";
-}
-
-async function fetchOverpass(query: string) {
-  let lastError = "Could not load nearby places.";
-
-  for (const endpoint of OVERPASS_ENDPOINTS) {
-    try {
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-        },
-        body: `data=${encodeURIComponent(query)}`,
-      });
-
-      if (!response.ok) {
-        lastError = `Map server error: ${response.status}`;
-        continue;
-      }
-
-      return await response.json();
-    } catch (error) {
-      lastError =
-        error instanceof Error ? error.message : "Could not load map data.";
-    }
-  }
-
-  throw new Error(lastError);
-}
-
-async function fetchNearbyPlaces({
-  latitude,
-  longitude,
-  category,
-}: {
-  latitude: number;
-  longitude: number;
-  category: PlaceCategory;
-}) {
-  const query = buildOverpassQuery({
-    latitude,
-    longitude,
-    category,
-    radius: 2500,
-  });
-
-  const data = await fetchOverpass(query);
-  const elements = (data.elements ?? []) as OverpassElement[];
-
-  const places = elements
-    .map((element) => {
-      const placeLat = element.lat ?? element.center?.lat;
-      const placeLon = element.lon ?? element.center?.lon;
-
-      if (!placeLat || !placeLon) return null;
-
-      const tags = element.tags ?? {};
-      const name = getPlaceName(tags, category);
-
-      if (!name) return null;
-
-      const distance = calculateDistanceMeters(
-        latitude,
-        longitude,
-        placeLat,
-        placeLon
-      );
-
-      return {
-        id: `${element.type}-${element.id}`,
-        name,
-        type: getPlaceType(tags, category),
-        latitude: placeLat,
-        longitude: placeLon,
-        distance,
-        description: buildPlaceDescription(tags, category),
-        tags,
-      } satisfies NearbyPlace;
-    })
-    .filter((place): place is NearbyPlace => Boolean(place))
-    .sort((a, b) => a.distance - b.distance)
-    .slice(0, 10);
-
-  return places;
+  return `${place.rating.toFixed(1)} ★${reviews}`;
 }
 
 export function AITravelCompanion() {
@@ -379,6 +98,7 @@ export function AITravelCompanion() {
 
   const watchIdRef = useRef<number | null>(null);
   const lastPlacesQueryRef = useRef("");
+  const placesRequestIdRef = useRef(0);
 
   const selectedCategoryLabel = useMemo(() => {
     return (
@@ -399,8 +119,8 @@ export function AITravelCompanion() {
     if (!liveLocation) return;
 
     const queryKey = `${selectedCategory}-${liveLocation.latitude.toFixed(
-      3
-    )}-${liveLocation.longitude.toFixed(3)}`;
+      4
+    )}-${liveLocation.longitude.toFixed(4)}`;
 
     if (lastPlacesQueryRef.current === queryKey) return;
 
@@ -409,37 +129,48 @@ export function AITravelCompanion() {
     async function loadNearbyPlaces() {
       if (!liveLocation) return;
 
+      const requestId = placesRequestIdRef.current + 1;
+      placesRequestIdRef.current = requestId;
+
       try {
         setPlacesLoading(true);
         setPlacesError("");
+        setNearbyPlaces([]);
+
         setAiAnswer("");
         setAiRankedIds([]);
         setAiHighlights([]);
         setAiSuggestions([]);
 
-        const places = await fetchNearbyPlaces({
+        const places = await getRealNearbyPlaces({
           latitude: liveLocation.latitude,
           longitude: liveLocation.longitude,
           category: selectedCategory,
         });
 
+        if (placesRequestIdRef.current !== requestId) return;
+
         setNearbyPlaces(places);
 
         if (places.length === 0) {
           setPlacesError(
-            `No ${selectedCategoryLabel.toLowerCase()} found within 2.5km. Try another category.`
+            `No ${selectedCategoryLabel.toLowerCase()} found nearby. Try another category or refresh places.`
           );
         }
       } catch (error) {
+        if (placesRequestIdRef.current !== requestId) return;
+
         const message =
           error instanceof Error
             ? error.message
-            : "Could not load nearby places.";
+            : "Could not load real nearby places.";
 
         setPlacesError(message);
         setNearbyPlaces([]);
       } finally {
-        setPlacesLoading(false);
+        if (placesRequestIdRef.current === requestId) {
+          setPlacesLoading(false);
+        }
       }
     }
 
@@ -449,7 +180,10 @@ export function AITravelCompanion() {
   async function savePosition(position: GeolocationPosition) {
     const { latitude, longitude, accuracy } = position.coords;
 
-    const address = await getAddressFromCoordinates(latitude, longitude);
+    const address = await getReadableLocationName({
+      latitude,
+      longitude,
+    });
 
     setLiveLocation({
       latitude,
@@ -503,6 +237,11 @@ export function AITravelCompanion() {
       return;
     }
 
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
+
     setLocationLoading(true);
 
     navigator.geolocation.getCurrentPosition(
@@ -552,8 +291,15 @@ export function AITravelCompanion() {
       return;
     }
 
+    if (placesLoading) {
+      setPlacesError("Please wait until real places finish loading.");
+      return;
+    }
+
     if (nearbyPlaces.length === 0) {
-      setPlacesError("There are no real nearby places to analyze yet.");
+      setPlacesError(
+        "No real nearby places were loaded yet, so AI has nothing to recommend."
+      );
       return;
     }
 
@@ -596,6 +342,8 @@ export function AITravelCompanion() {
     if (!liveLocation) return;
 
     lastPlacesQueryRef.current = "";
+    setPlacesError("");
+    setNearbyPlaces([]);
     setLiveLocation({ ...liveLocation });
   }
 
@@ -619,8 +367,8 @@ export function AITravelCompanion() {
           </h2>
 
           <p className="mt-3 max-w-2xl text-sm leading-7 text-background/55">
-            First, the app gets real nearby places from map data. Then AI ranks
-            and explains the best options based on your request.
+            First, the app gets real nearby places from Google Places data. Then
+            AI ranks and explains the best options based on your request.
           </p>
         </div>
 
@@ -773,8 +521,8 @@ export function AITravelCompanion() {
           </h3>
 
           <p className="mt-2 text-sm leading-7 text-background/55">
-            These places come from map data. AI does not invent places here; it
-            only ranks and explains the real results shown below.
+            These places come from Google Places data. AI does not invent places
+            here; it only ranks and explains the real results shown below.
           </p>
 
           <div className="mt-4 flex flex-col gap-3 lg:flex-row">
@@ -788,10 +536,10 @@ export function AITravelCompanion() {
             <button
               type="button"
               onClick={() => void handleAskNearbyAI()}
-              disabled={aiLoading || !liveLocation || nearbyPlaces.length === 0}
+              disabled={aiLoading || !liveLocation || placesLoading}
               className="rounded-full bg-sunset px-6 py-3 text-xs font-black uppercase tracking-widest text-foreground shadow-lg transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {aiLoading ? "Thinking..." : "Ask AI"}
+              {aiLoading ? "Thinking..." : placesLoading ? "Wait..." : "Ask AI"}
             </button>
           </div>
 
@@ -851,7 +599,7 @@ export function AITravelCompanion() {
             <h3 className="text-2xl font-black">Loading real places...</h3>
 
             <p className="mt-2 text-sm text-background/55">
-              Searching map data near your current location.
+              Searching Google Places data near your current location.
             </p>
           </div>
         ) : nearbyPlaces.length === 0 ? (
@@ -860,7 +608,7 @@ export function AITravelCompanion() {
 
             <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-background/55">
               Try another category or press Refresh places. Some areas may have
-              fewer mapped places.
+              fewer nearby results.
             </p>
           </div>
         ) : (
@@ -909,7 +657,14 @@ function PlaceCard({
   aiRank: number | null;
   aiHighlight: NearbyAIHighlight | null;
 }) {
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${place.latitude},${place.longitude}`;
+  const mapsUrl =
+    place.googleMapsUri ||
+    `https://www.google.com/maps/search/?api=1&query=${place.latitude},${place.longitude}`;
+
+  const ratingText = formatRating(place);
+
+  const website =
+    typeof place.tags?.website === "string" ? place.tags.website : "";
 
   return (
     <article
@@ -934,8 +689,22 @@ function PlaceCard({
           </div>
 
           <p className="mt-1 text-sm capitalize text-background/45">
-            {place.type}
+            {place.type?.replace(/_/g, " ") || place.category}
           </p>
+
+          {ratingText && (
+            <p className="mt-1 text-xs font-bold text-sunset">{ratingText}</p>
+          )}
+
+          {place.openNow !== null && (
+            <p
+              className={`mt-1 text-xs font-bold ${
+                place.openNow ? "text-emerald-200" : "text-red-200"
+              }`}
+            >
+              {place.openNow ? "Open now" : "Closed now"}
+            </p>
+          )}
         </div>
 
         <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-black text-sunset">
@@ -944,8 +713,16 @@ function PlaceCard({
       </div>
 
       <p className="text-sm leading-6 text-background/60">
-        {place.description}
+        {place.description ||
+          place.address ||
+          "Real place found near your current location."}
       </p>
+
+      {place.address && (
+        <p className="mt-2 text-xs leading-5 text-background/40">
+          {place.address}
+        </p>
+      )}
 
       {aiHighlight && (
         <div className="mt-4 rounded-[1.25rem] border border-sunset/20 bg-sunset/10 p-4">
@@ -973,9 +750,9 @@ function PlaceCard({
           Open in Maps
         </a>
 
-        {place.tags.website && (
+        {website && (
           <a
-            href={place.tags.website}
+            href={website}
             target="_blank"
             rel="noreferrer"
             className="inline-flex rounded-full bg-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-background/70 transition hover:bg-white/15"
